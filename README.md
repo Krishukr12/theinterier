@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Interier
 
-## Getting Started
+Public marketing website for **The Interier** — an India-focused, technology-enabled platform for the interior industry.
 
-First, run the development server:
+Tagline: *The infrastructure behind better interiors.*
+
+This repository is the public site only. It does not include a CRM, product dashboard, authentication, or marketplace application.
+
+## Stack
+
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS 4
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Pages
 
-## Learn More
+| Route | Purpose |
+| --- | --- |
+| `/` | Homepage |
+| `/for-interior-firms` | Professional value and early-access registration |
+| `/for-customers` | Customer journey and project enquiry |
+| `/how-it-works` | Live vs planned journeys |
+| `/about` | Vision and principles |
+| `/insights` | Editorial hub |
+| `/insights/[slug]` | Article |
+| `/contact` | Contact enquiry |
+| `/privacy` | Starter privacy policy |
+| `/terms` | Starter terms of use |
 
-To learn more about Next.js, take a look at the following resources:
+## Forms
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`POST /api/enquiries` validates payloads and delivers them only when a backend is configured.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Configure **one** of:
 
-## Deploy on Vercel
+1. `FORM_WEBHOOK_URL` — JSON webhook for a CRM or automation tool. Optional `FORM_WEBHOOK_TOKEN` is sent as a Bearer token.
+2. `RESEND_API_KEY` + `ENQUIRY_FROM_EMAIL` + `ENQUIRY_TO_EMAIL` (or `NEXT_PUBLIC_CONTACT_EMAIL`).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+If neither path is configured, the API returns **503** and the UI shows an error. It will not display a success state for an undelivered submission.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Webhook body shape:
+
+```json
+{
+  "source": "theinterier-website",
+  "submittedAt": "ISO-8601",
+  "kind": "professional | customer | contact | early-access",
+  "name": "",
+  "email": "",
+  "consent": true
+}
+```
+
+Customer and professional fields are included when present.
+
+## Environment
+
+See [`.env.example`](.env.example).
+
+| Variable | Required for launch | Notes |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Yes | Production canonical origin. No domain was present in this repository; set the real one before launch. |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | Optional | Defaults to `contact@theinterieri.com`. |
+| `NEXT_PUBLIC_CONTACT_PHONE` | Optional | Defaults to `+91 84314 16032`. |
+| `NEXT_PUBLIC_CONTACT_ADDRESS` | Optional | Omitted if blank. |
+| `FORM_WEBHOOK_URL` or Resend vars | Yes, for working forms | Otherwise enquiries cannot be delivered. |
+| `NEXT_PUBLIC_ANALYTICS_WRITE_KEY` | Optional | Reserved. |
+| `NEXT_PUBLIC_FIRM_APP_URL` | Optional | Future professional app. |
+| `NEXT_PUBLIC_CUSTOMER_APP_URL` | Optional | Future customer app. |
+
+## Branding
+
+The official lockup lives at `public/brand/the-interier-logo.svg` and is used in the header, footer, and Open Graph image.
+
+Photography is loaded from Unsplash with credits on key images. Replace with owned photography before a high-profile launch if required.
+
+Legal pages are starters. Registered entity name, CIN, office address, and governing-court details need confirmation.
+
+## Future product hooks
+
+Keep these boundaries when the SaaS and marketplace land:
+
+- Enquiry kinds in `src/lib/enquiry.ts`
+- Delivery in `src/app/api/enquiries/route.ts`
+- Editorial content in `src/content/articles.ts`
+- Optional app URLs in environment variables
